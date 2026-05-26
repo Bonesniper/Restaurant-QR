@@ -1,32 +1,33 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 export function MenuSkeleton() {
   return (
-    <div className="animate-pulse max-w-6xl mx-auto px-4 py-6">
-      <div className="flex gap-2 overflow-hidden mb-6">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-10 w-24 rounded-xl bg-gray-200 flex-shrink-0" />
+    <div className="max-w-4xl mx-auto px-4 py-5 animate-pulse">
+      {/* Category tab bar skeleton */}
+      <div className="flex gap-2 mb-6">
+        {[80, 64, 96, 72].map((w, i) => (
+          <div key={i} className="h-7 rounded-full bg-stone-200" style={{ width: w }} />
         ))}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: i * 0.05 }}
-            className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100"
-          >
-            <div className="aspect-[4/3] bg-gray-200" />
+
+      {/* Section heading */}
+      <div className="h-4 w-24 bg-stone-200 rounded mb-4" />
+
+      {/* Item grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-card border border-stone-100">
+            <div className="aspect-[4/3] bg-stone-200" />
             <div className="p-3 space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-3/4" />
-              <div className="h-3 bg-gray-100 rounded w-full" />
-              <div className="h-4 bg-gray-200 rounded w-1/3" />
-              <div className="h-9 bg-gray-200 rounded-xl w-full mt-2" />
+              <div className="h-3.5 bg-stone-200 rounded-full w-3/4" />
+              <div className="h-3 bg-stone-100 rounded-full w-full" />
+              <div className="h-3 bg-stone-100 rounded-full w-2/3" />
+              <div className="flex justify-between items-center pt-1">
+                <div className="h-3.5 bg-stone-200 rounded-full w-10" />
+                <div className="h-6 w-12 bg-stone-200 rounded-xl" />
+              </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

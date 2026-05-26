@@ -4,17 +4,15 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { MenuView } from "@/components/customer/MenuView";
 import { CartSummary } from "@/components/customer/CartSummary";
 import { MenuSkeleton } from "@/components/customer/MenuSkeleton";
-import type { TableWithRestaurant } from "@/types";
-import type { MenuCategory, MenuItem } from "@/types";
-import type { CartItem } from "@/types";
+import type { TableWithRestaurant, MenuCategory, MenuItem, CartItem } from "@/types";
 
 export default function TablePage() {
   const params = useParams();
   const tableId = params?.tableId as string;
+
   const [table, setTable] = useState<TableWithRestaurant | null>(null);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -28,18 +26,17 @@ export default function TablePage() {
       try {
         const tableRes = await fetch(`/api/tables/${tableId}`);
         if (!tableRes.ok) {
-          const data = await tableRes.json().catch(() => ({}));
-          setError(data.error || "Table not found");
+          const d = await tableRes.json().catch(() => ({}));
+          setError(d.error || "Table not found");
           setLoading(false);
           return;
         }
         const tableData = await tableRes.json();
         setTable(tableData);
         const menuRes = await fetch(`/api/restaurants/${tableData.restaurant.id}/menu`);
-        const menuData = menuRes.ok ? await menuRes.json() : [];
-        setCategories(menuData);
-      } catch (e) {
-        setError("Failed to load");
+        setCategories(menuRes.ok ? await menuRes.json() : []);
+      } catch {
+        setError("Failed to load menu");
       } finally {
         setLoading(false);
       }
@@ -47,24 +44,10 @@ export default function TablePage() {
   }, [tableId]);
 
   const addToCart = useCallback((item: MenuItem, qty = 1) => {
-    const price = parseFloat(item.price);
     setCart((prev) => {
       const existing = prev.find((c) => c.menuItemId === item.id);
-      if (existing) {
-        return prev.map((c) =>
-          c.menuItemId === item.id ? { ...c, quantity: c.quantity + qty } : c
-        );
-      }
-      return [
-        ...prev,
-        {
-          menuItemId: item.id,
-          name: item.name,
-          price,
-          quantity: qty,
-          imageUrl: item.imageUrl,
-        },
-      ];
+      if (existing) return prev.map((c) => c.menuItemId === item.id ? { ...c, quantity: c.quantity + qty } : c);
+      return [...prev, { menuItemId: item.id, name: item.name, price: parseFloat(item.price), quantity: qty, imageUrl: item.imageUrl }];
     });
   }, []);
 
@@ -74,9 +57,7 @@ export default function TablePage() {
       if (!item) return prev;
       const next = item.quantity + delta;
       if (next <= 0) return prev.filter((c) => c.menuItemId !== menuItemId);
-      return prev.map((c) =>
-        c.menuItemId === menuItemId ? { ...c, quantity: next } : c
-      );
+      return prev.map((c) => c.menuItemId === menuItemId ? { ...c, quantity: next } : c);
     });
   }, []);
 
@@ -95,11 +76,11 @@ export default function TablePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white">
-        <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-amber-100 px-4 py-3">
-          <div className="flex items-center justify-between max-w-6xl mx-auto">
-            <div className="h-8 w-32 rounded-lg bg-gray-200 animate-pulse" />
-            <div className="h-6 w-16 rounded bg-gray-200 animate-pulse" />
+      <div className="min-h-screen bg-white">
+        <header className="sticky top-0 z-10 bg-white border-b border-stone-100 px-4 py-3.5">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            <div className="h-5 w-36 rounded-full bg-stone-100 animate-pulse" />
+            <div className="h-8 w-20 rounded-full bg-stone-100 animate-pulse" />
           </div>
         </header>
         <MenuSkeleton />
@@ -109,59 +90,59 @@ export default function TablePage() {
 
   if (error || !table) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 bg-amber-50">
-        <p className="text-red-600">{error || "Table not found"}</p>
-        <Link href="/" className="text-amber-600 font-medium">
-          Back to home
-        </Link>
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 p-6">
+        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-xl">!</div>
+        <p className="text-stone-600 font-medium">{error || "Table not found"}</p>
+        <Link href="/" className="text-orange-500 text-sm font-medium hover:underline">Go home</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white pb-28 safe-bottom">
-      {/* Top: logo, table number, sticky cart button */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-amber-100 shadow-sm">
-        <div className="flex items-center justify-between max-w-6xl mx-auto px-4 py-3">
+    <div className="min-h-screen bg-stone-50 pb-32">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-white border-b border-stone-100">
+        <div className="flex items-center justify-between max-w-4xl mx-auto px-4 py-3">
+          {/* Restaurant identity */}
           <div className="flex items-center gap-3 min-w-0">
             {table.restaurant.logoUrl ? (
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-amber-100">
-                <Image
-                  src={
-                    table.restaurant.logoUrl.startsWith("/")
-                      ? table.restaurant.logoUrl
-                      : table.restaurant.logoUrl
-                  }
-                  alt=""
-                  fill
-                  className="object-cover"
-                  sizes="40px"
-                />
+              <div className="relative w-8 h-8 rounded-xl overflow-hidden bg-stone-100 shrink-0">
+                <Image src={table.restaurant.logoUrl} alt="" fill className="object-cover" sizes="32px" />
               </div>
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-amber-200 flex items-center justify-center text-lg shrink-0">
-                🍴
+              <div className="w-8 h-8 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
+                <span className="text-white text-xs font-bold">
+                  {table.restaurant.name.charAt(0)}
+                </span>
               </div>
             )}
-            <h1 className="text-lg font-bold text-gray-900 truncate">
-              {table.restaurant.name}
-            </h1>
+            <div className="min-w-0">
+              <p className="font-semibold text-stone-900 text-sm truncate leading-tight">
+                {table.restaurant.name}
+              </p>
+              <p className="text-stone-400 text-xs">Table {table.label}</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg">
-              Table {table.label}
-            </span>
-            <button
-              type="button"
-              onClick={() => setDrawerOpen(true)}
-              className="flex items-center gap-2 py-2 px-4 rounded-xl bg-amber-500 text-white font-bold shadow-md hover:bg-amber-600 active:scale-[0.98] transition"
-            >
-              <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-sm">
-                {totalItems}
-              </span>
-              <span className="hidden sm:inline">${subtotal.toFixed(2)}</span>
-            </button>
-          </div>
+
+          {/* Cart button */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
+              totalItems > 0
+                ? "bg-orange-500 text-white shadow-orange hover:bg-orange-600 active:scale-[0.97]"
+                : "bg-stone-100 text-stone-500"
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+            </svg>
+            {totalItems > 0 ? (
+              <span>{totalItems} · ${subtotal.toFixed(2)}</span>
+            ) : (
+              <span>Cart</span>
+            )}
+          </button>
         </div>
       </header>
 

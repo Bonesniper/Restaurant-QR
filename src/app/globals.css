@@ -2,19 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground: #1a1a1a;
-  --background: #fafafa;
-}
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
+  body {
+    @apply bg-stone-50 text-stone-900;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
 }
 
 @layer utilities {
   .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
   }
   .scrollbar-hide {
     -ms-overflow-style: none;
